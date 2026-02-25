@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dealer Daily Activity Dashboard — น้องวางใจ</title>
+<title>Dealer Daily Activity Dashboard — บ.นวชัย แมททีเรียล เทรดดิ้ง จก.</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="stylesheet" href="./CPACTheme.css">
 <style>
 /* ─── ROOT VARIABLES (CPACTheme inspired) ─── */
@@ -81,12 +82,12 @@ a { color: inherit; text-decoration: none; }
   flex-shrink: 0;
 }
 .header-logo-img {
-  width: 36px; height: 36px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: white;
-  border: 1px solid rgba(255,255,255,0.5);
-  padding: 2px;
+  width: 56px; height: 36px;
+  border-radius: 0;
+  object-fit: contain;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 .header-title {
   color: white;
@@ -94,7 +95,7 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.2;
 }
 .header-subtitle {
-  color: rgba(255,255,255,0.65);
+  color: rgba(255,255,255,0.82);
   font-size: 11px; font-weight: 400;
 }
 .header-spacer { flex: 1; }
@@ -231,12 +232,36 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
   box-shadow: var(--shadow);
 }
+.table-tabs {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-light);
+  background: linear-gradient(180deg, var(--surface2), var(--surface));
+}
+.table-tab {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+.table-tab:hover { border-color: var(--primary-light); color: var(--primary); }
+.table-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
 .table-header-bar {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border-light);
   background: var(--surface);
 }
+.table-panel { display: none; }
+.table-panel.active { display: block; }
 .table-title { font-size: 13px; font-weight: 700; color: var(--text); }
 .table-count {
   font-size: 11px; color: var(--text-muted);
@@ -264,7 +289,8 @@ table {
   width: 100%; border-collapse: collapse;
   table-layout: fixed;
 }
-thead { position: sticky; top: calc(var(--header-h) + var(--filter-h) + var(--kpi-h)); z-index: 50; }
+thead { position: static; }
+#actTable thead { position: static; }
 thead tr { background: var(--surface3); }
 th {
   padding: 8px 12px;
@@ -274,14 +300,14 @@ th {
   border-bottom: 2px solid var(--border);
   white-space: nowrap; overflow: hidden;
 }
-th:nth-child(1) { width: 56px; }
-th:nth-child(2) { width: 70px; }
-th:nth-child(3) { width: 140px; }
-th:nth-child(4) { width: 150px; }
-th:nth-child(5) { width: 170px; }
-th:nth-child(6) { width: auto; }
-th:nth-child(7) { width: 120px; }
-th:nth-child(8) { width: 160px; }
+#actTable th:nth-child(1) { width: 56px; }
+#actTable th:nth-child(2) { width: 70px; }
+#actTable th:nth-child(3) { width: 140px; }
+#actTable th:nth-child(4) { width: 150px; }
+#actTable th:nth-child(5) { width: 170px; }
+#actTable th:nth-child(6) { width: auto; }
+#actTable th:nth-child(7) { width: 120px; }
+#actTable th:nth-child(8) { width: 160px; }
 
 tbody tr {
   border-bottom: 1px solid var(--border-light);
@@ -317,6 +343,39 @@ td {
   color: var(--text-muted);
   white-space: nowrap;
 }
+#pourTable { table-layout: auto; }
+#pourTable th, #pourTable td { white-space: nowrap; }
+#pourTable thead {
+  position: static;
+}
+.num-cell { text-align: right; font-family: var(--mono); }
+.num-link {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 700;
+}
+.num-link:hover { color: var(--primary-dark); }
+.status-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+.pump-pill {
+  display: inline-block;
+  min-width: 44px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--text-light);
+}
+.pump-pill.on { background: var(--warn); }
 .time-cell .new-badge {
   display: block;
   font-size: 9px; font-weight: 700;
@@ -612,11 +671,11 @@ td {
 }
 .login-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
 .login-logo-img {
-  width: 48px; height: 48px; border-radius: 12px;
-  object-fit: cover;
-  background: white;
-  border: 1px solid var(--border);
-  padding: 3px;
+  width: 60px; height: 40px; border-radius: 0;
+  object-fit: contain;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 .login-logo-text h2 { font-size: 18px; font-weight: 700; color: var(--text); }
 .login-logo-text p { font-size: 11px; color: var(--text-muted); }
@@ -671,7 +730,7 @@ td {
       <img class="login-logo-img" src="./cpac-logo.jpg" alt="CPAC logo">
       <div class="login-logo-text">
         <h2>Dealer Portal</h2>
-        <p>น้องวางใจ — Activity Dashboard</p>
+        <p id="portalSubtitle">Activity Dashboard "ร้านผู้แทนจำหน่าย"</p>
       </div>
     </div>
     <div class="login-field">
@@ -683,7 +742,7 @@ td {
       <input type="password" id="loginPass" value="1234" placeholder="••••••••">
     </div>
     <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
-    <p class="login-hint">Demo: dealer01 / 1234</p>
+    <p class="login-hint" id="loginHint">Demo: dealer01 / 1234</p>
     <p class="login-error" id="loginError"></p>
   </div>
 </div>
@@ -696,8 +755,8 @@ td {
   <div class="header-logo">
     <img class="header-logo-img" src="./cpac-logo.jpg" alt="CPAC logo">
     <div>
-      <div class="header-title">Dealer Daily Activity Dashboard</div>
-      <div class="header-subtitle" id="headerDate">—</div>
+      <div class="header-title" id="headerTitle">Dealer Daily Activity Dashboard</div>
+      <div class="header-subtitle" id="headerCompany">บ.นวชัย แมททีเรียล เทรดดิ้ง จก.</div>
     </div>
   </div>
   <div class="header-spacer"></div>
@@ -715,6 +774,7 @@ td {
     </select>
     <button class="btn btn-ghost" id="changedToggle" onclick="toggleChanged()">🔄 Changed Only</button>
     <button class="btn btn-primary" onclick="doRefresh()">⟳ Refresh Now</button>
+    <button class="btn btn-ghost" onclick="window.location.href='setting.html'" title="Settings">⚙</button>
     <button class="btn btn-ghost" onclick="openAuditLog()" title="Audit Log">📋</button>
     <button class="btn btn-ghost" onclick="doLogout()" title="Logout">⏻</button>
   </div>
@@ -735,9 +795,14 @@ td {
     <span class="filter-label">ช่วงเวลา</span>
     <select class="filter-select" id="fTime" onchange="applyFilters()">
       <option value="all">ทั้งวัน</option>
-      <option value="15">15 นาทีล่าสุด</option>
-      <option value="60">1 ชั่วโมง</option>
-      <option value="240">4 ชั่วโมง</option>
+      <option value="06-09">06:00-09:00</option>
+      <option value="09-12">09:00-12:00</option>
+      <option value="12-15">12:00-15:00</option>
+      <option value="15-18">15:00-18:00</option>
+      <option value="18-21">18:00-21:00</option>
+      <option value="21-24">21:00-24:00</option>
+      <option value="00-03">24:00-03:00</option>
+      <option value="03-06">03:00-06:00</option>
     </select>
   </div>
   <div class="filter-divider"></div>
@@ -757,21 +822,15 @@ td {
     <span class="filter-label">ประเภท</span>
     <select class="filter-select" id="fType" onchange="applyFilters()">
       <option value="">ทั้งหมด</option>
-      <option value="SITE_PENDING">ขอเปิดไซต์</option>
-      <option value="QUOTE_SENT">ส่ง Quotation</option>
-      <option value="ADD_PRODUCT">เพิ่มสินค้า</option>
-      <option value="BOOKING_REQUEST">จองคิว</option>
-      <option value="BOOKING_CONFIRMED">ยืนยันการเท</option>
-      <option value="INVOICE_CREATED">ออก Invoice</option>
-      <option value="PAYMENT_PENDING">รอยืนยันชำระ</option>
-      <option value="PAYMENT_CONFIRMED">ยืนยันชำระแล้ว</option>
-      <option value="DISPATCH_LIVE">Dispatch Live</option>
-      <option value="CUSTOMER_ACTION">Action ลูกค้า</option>
-      <option value="POUR_REMINDER">แจ้งเตือนเท</option>
     </select>
   </div>
   <div class="filter-divider"></div>
-  <input class="filter-input" id="fSearch" placeholder="🔍 Site / Quote / ลูกค้า / เบอร์..." oninput="applyFilters()">
+  <div class="filter-group">
+    <span class="filter-label" id="fSiteProjectLabel">ไซต์/โครงการ</span>
+    <select class="filter-select" id="fSiteProject" style="min-width:260px" onchange="applyFilters()">
+      <option value="">ไซต์/โครงการทั้งหมด</option>
+    </select>
+  </div>
 </div>
 
 <!-- KPI STRIP -->
@@ -780,30 +839,59 @@ td {
 <!-- MAIN -->
 <div class="main-content" id="mainContent">
   <div class="table-wrap">
+    <div class="table-tabs">
+      <button class="table-tab active" id="tabActivity" onclick="switchMainTab('activity')">Activity Time Log</button>
+      <button class="table-tab" id="tabDailyPour" onclick="switchMainTab('daily-pour')">งานเทประจำวัน</button>
+    </div>
     <div class="table-header-bar">
-      <span class="table-title">Activity Tape</span>
+      <span class="table-title" id="tableTitle">Activity Time Log</span>
       <span class="table-count" id="tableCount">0 รายการ</span>
       <div class="table-spacer"></div>
       <span class="new-badge-indicator" id="newBadge" style="display:none">0 รายการใหม่</span>
     </div>
-    <div style="overflow-x:auto;">
-      <table id="actTable">
-        <thead>
-          <tr>
-            <th>เวลา</th>
-            <th>ระดับ</th>
-            <th>ประเภทเหตุการณ์</th>
-            <th>ลูกค้า</th>
-            <th>ไซต์/โครงการ</th>
-            <th>รายละเอียด</th>
-            <th>สถานะ</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="actBody"></tbody>
-      </table>
+    <div class="table-panel active" id="activityPanel">
+      <div style="overflow-x:auto;">
+        <table id="actTable">
+          <thead>
+            <tr>
+              <th>เวลา</th>
+              <th>ระดับ</th>
+              <th>ประเภทเหตุการณ์</th>
+              <th>ลูกค้า</th>
+              <th>ไซต์/โครงการ</th>
+              <th>รายละเอียด</th>
+              <th>สถานะ</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="actBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
     </div>
-    <div class="pagination" id="pagination"></div>
+    <div class="table-panel" id="dailyPourPanel">
+      <div style="overflow-x:auto;">
+        <table id="pourTable">
+          <thead>
+            <tr>
+              <th>เลขที่งานจอง</th>
+              <th>สถานะ</th>
+              <th>หน่วยงาน</th>
+              <th>ผู้รับเหมา/ลูกค้า</th>
+              <th>รหัสสินค้า</th>
+              <th>ยอดจอง (คิว)</th>
+              <th>ยอด Confirm (คิว)</th>
+              <th>ยอดเท (คิว)</th>
+              <th>ค้างปูน</th>
+              <th>ปั๊ม</th>
+              <th>วันที่เท</th>
+            </tr>
+          </thead>
+          <tbody id="pourBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="paginationPour"></div>
+    </div>
   </div>
 </div>
 
@@ -845,9 +933,14 @@ let autoRefreshTimer = null;
 let showChangedOnly = false;
 let selectedKpi = null;
 let currentPage = 1;
-const PAGE_SIZE = 25;
+let currentPourPage = 1;
+let PAGE_SIZE = 25;
+let activeMainTab = 'activity';
 let allEvents = [];
 let filteredEvents = [];
+let filteredDailyPourRows = [];
+let dailyJobsFromExcel = [];
+let hasDailyJobsExcel = false;
 let newEventIds = new Set();
 let auditLog = [];
 let selectedEventId = null;
@@ -879,10 +972,193 @@ const STATES = {
   DONE:             { label: 'เสร็จสิ้น', cls: 'state-done' },
 };
 
-const PROVINCES = ['กรุงเทพ','นนทบุรี','ปทุมธานี','สมุทรปราการ','ชลบุรี','ระยอง','นครราชสีมา','ขอนแก่น','อุดรธานี','เชียงใหม่','ภูเก็ต','สุราษฎร์ธานี','อยุธยา','สระบุรี','ลพบุรี','นครปฐม','ราชบุรี','กาญจนบุรี'];
-const CUSTOMER_NAMES = ['คุณสมชาย ใจดี','คุณวิไล รักงาน','บริษัท สร้างดี จำกัด','คุณปรีชา บุญมา','ห้างหุ้นส่วน ชวนชัย','คุณมานะ อดทน','บริษัท พัฒนาที่ดี จำกัด','คุณสุดา ดวงดี','คุณประสิทธิ์ มีคุณ','บริษัท ก้าวหน้า จำกัด','คุณอรทัย งามดี','คุณธนกร ร่ำรวย','ห้างหุ้นส่วน สามัคคี','คุณกมล สุขสม','บริษัท รุ่งเรือง จำกัด'];
-const PRODUCTS = ['คอนกรีต 240 ksc','คอนกรีต 280 ksc','คอนกรีต 300 ksc','คอนกรีต 320 ksc','คอนกรีต 350 ksc'];
-const PLANTS = ['โรงงานลาดกระบัง','โรงงานรังสิต','โรงงานบางนา','โรงงานพระราม 2','โรงงานชลบุรี'];
+let PROVINCES = ['กรุงเทพ','นนทบุรี','ปทุมธานี','สมุทรปราการ','ชลบุรี','ระยอง','นครราชสีมา','ขอนแก่น','อุดรธานี','เชียงใหม่','ภูเก็ต','สุราษฎร์ธานี','อยุธยา','สระบุรี','ลพบุรี','นครปฐม','ราชบุรี','กาญจนบุรี'];
+let CUSTOMER_NAMES = ['คุณสมชาย ใจดี','คุณวิไล รักงาน','บริษัท สร้างดี จำกัด','คุณปรีชา บุญมา','ห้างหุ้นส่วน ชวนชัย','คุณมานะ อดทน','บริษัท พัฒนาที่ดี จำกัด','คุณสุดา ดวงดี','คุณประสิทธิ์ มีคุณ','บริษัท ก้าวหน้า จำกัด','คุณอรทัย งามดี','คุณธนกร ร่ำรวย','ห้างหุ้นส่วน สามัคคี','คุณกมล สุขสม','บริษัท รุ่งเรือง จำกัด'];
+let PRODUCTS = ['คอนกรีต 240 ksc','คอนกรีต 280 ksc','คอนกรีต 300 ksc','คอนกรีต 320 ksc','คอนกรีต 350 ksc'];
+let PLANTS = ['โรงงานลาดกระบัง','โรงงานรังสิต','โรงงานบางนา','โรงงานพระราม 2','โรงงานชลบุรี'];
+
+const DEALER_COMPANY_NAME = 'บ.นวชัย แมททีเรียล เทรดดิ้ง จก.';
+const DEALER_PORTAL_SUBTITLE = 'Activity Dashboard "ร้านผู้แทนจำหน่าย"';
+const POUR_TRACKING_BASE_URL = 'https://bluenet.scg.com/sda/#/dp-list?orderNo=';
+const DEFAULT_TRACKING_ORDER_NO = '9dbc19d1459343ec8cb70b235a064dbf';
+
+const DASHBOARD_SETTINGS_KEY = 'dealerDashboardSettingsV1';
+const DEFAULT_DASHBOARD_SETTINGS = {
+  appTitle: 'Dealer Daily Activity Dashboard',
+  appSubtitle: DEALER_PORTAL_SUBTITLE,
+  loginUsername: 'dealer01',
+  loginPassword: '1234',
+  pageSize: 25,
+  initialEventCount: 60,
+  refreshNewEventMin: 0,
+  refreshNewEventMax: 3,
+  defaultAutoRefreshSeconds: 30,
+  autoRefreshOptions: [0, 15, 30, 60, 300],
+  showChangedOnlyDefault: false,
+  enabledEventTypes: Object.keys(EVENT_TYPES),
+  provinces: [...PROVINCES],
+  customers: [...CUSTOMER_NAMES],
+  products: [...PRODUCTS],
+  plants: [...PLANTS],
+};
+
+let dashboardSettings = { ...DEFAULT_DASHBOARD_SETTINGS };
+
+function toInt(value, fallback) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function clampInt(value, fallback, min, max) {
+  const n = toInt(value, fallback);
+  return Math.min(Math.max(n, min), max);
+}
+
+function sanitizeStringArray(value, fallback) {
+  if (!Array.isArray(value)) return [...fallback];
+  const cleaned = value
+    .map(v => String(v || '').trim())
+    .filter(Boolean);
+  return cleaned.length ? cleaned : [...fallback];
+}
+
+function sanitizeNumberArray(value, fallback) {
+  if (!Array.isArray(value)) return [...fallback];
+  const unique = [];
+  value.forEach(v => {
+    const n = toInt(v, NaN);
+    if (Number.isFinite(n) && n >= 0 && !unique.includes(n)) {
+      unique.push(n);
+    }
+  });
+  unique.sort((a, b) => a - b);
+  return unique.length ? unique : [...fallback];
+}
+
+function normalizeDashboardSettings(raw = {}) {
+  const merged = { ...DEFAULT_DASHBOARD_SETTINGS, ...(raw || {}) };
+  const eventKeys = Object.keys(EVENT_TYPES);
+  const legacyCombinedTitle = 'Dealer Daily Activity Dashboard — บ.นวชัย แมททีเรียล เทรดดิ้ง จก.';
+  const legacySubtitle = 'น้องวางใจ — Activity Dashboard';
+
+  const settings = {
+    appTitle: String(merged.appTitle || DEFAULT_DASHBOARD_SETTINGS.appTitle).trim() || DEFAULT_DASHBOARD_SETTINGS.appTitle,
+    appSubtitle: String(merged.appSubtitle || DEFAULT_DASHBOARD_SETTINGS.appSubtitle).trim() || DEFAULT_DASHBOARD_SETTINGS.appSubtitle,
+    loginUsername: String(merged.loginUsername || DEFAULT_DASHBOARD_SETTINGS.loginUsername).trim() || DEFAULT_DASHBOARD_SETTINGS.loginUsername,
+    loginPassword: String(merged.loginPassword || DEFAULT_DASHBOARD_SETTINGS.loginPassword),
+    pageSize: clampInt(merged.pageSize, DEFAULT_DASHBOARD_SETTINGS.pageSize, 5, 200),
+    initialEventCount: clampInt(merged.initialEventCount, DEFAULT_DASHBOARD_SETTINGS.initialEventCount, 10, 500),
+    refreshNewEventMin: clampInt(merged.refreshNewEventMin, DEFAULT_DASHBOARD_SETTINGS.refreshNewEventMin, 0, 50),
+    refreshNewEventMax: clampInt(merged.refreshNewEventMax, DEFAULT_DASHBOARD_SETTINGS.refreshNewEventMax, 0, 50),
+    defaultAutoRefreshSeconds: clampInt(merged.defaultAutoRefreshSeconds, DEFAULT_DASHBOARD_SETTINGS.defaultAutoRefreshSeconds, 0, 3600),
+    autoRefreshOptions: sanitizeNumberArray(merged.autoRefreshOptions, DEFAULT_DASHBOARD_SETTINGS.autoRefreshOptions),
+    showChangedOnlyDefault: Boolean(merged.showChangedOnlyDefault),
+    enabledEventTypes: sanitizeStringArray(merged.enabledEventTypes, DEFAULT_DASHBOARD_SETTINGS.enabledEventTypes)
+      .filter(key => eventKeys.includes(key)),
+    provinces: sanitizeStringArray(merged.provinces, DEFAULT_DASHBOARD_SETTINGS.provinces),
+    customers: sanitizeStringArray(merged.customers, DEFAULT_DASHBOARD_SETTINGS.customers),
+    products: sanitizeStringArray(merged.products, DEFAULT_DASHBOARD_SETTINGS.products),
+    plants: sanitizeStringArray(merged.plants, DEFAULT_DASHBOARD_SETTINGS.plants),
+  };
+
+  if (settings.appTitle === legacyCombinedTitle) {
+    settings.appTitle = DEFAULT_DASHBOARD_SETTINGS.appTitle;
+  }
+  if (settings.appSubtitle === legacySubtitle || settings.appSubtitle === DEALER_COMPANY_NAME) {
+    settings.appSubtitle = DEFAULT_DASHBOARD_SETTINGS.appSubtitle;
+  }
+
+  if (!settings.enabledEventTypes.length) {
+    settings.enabledEventTypes = [...DEFAULT_DASHBOARD_SETTINGS.enabledEventTypes];
+  }
+  if (settings.refreshNewEventMax < settings.refreshNewEventMin) {
+    settings.refreshNewEventMax = settings.refreshNewEventMin;
+  }
+  if (!settings.autoRefreshOptions.includes(settings.defaultAutoRefreshSeconds)) {
+    settings.autoRefreshOptions.push(settings.defaultAutoRefreshSeconds);
+    settings.autoRefreshOptions.sort((a, b) => a - b);
+  }
+
+  return settings;
+}
+
+function getEnabledEventTypeKeys() {
+  const keys = dashboardSettings?.enabledEventTypes || [];
+  return keys.length ? keys : Object.keys(EVENT_TYPES);
+}
+
+function formatIntervalLabel(seconds) {
+  if (seconds === 0) return 'Auto: Off';
+  if (seconds < 60) return `${seconds} วินาที`;
+  if (seconds % 60 === 0) return `${seconds / 60} นาที`;
+  return `${seconds} วินาที`;
+}
+
+function renderIntervalOptions() {
+  const select = document.getElementById('intervalSelect');
+  if (!select) return;
+  select.innerHTML = dashboardSettings.autoRefreshOptions.map(sec => (
+    `<option value="${sec}">${formatIntervalLabel(sec)}</option>`
+  )).join('');
+}
+
+function renderEventTypeOptions() {
+  const select = document.getElementById('fType');
+  if (!select) return;
+  const current = select.value;
+  const options = getEnabledEventTypeKeys().map(key => {
+    const info = EVENT_TYPES[key];
+    const label = info ? info.label : key;
+    return `<option value="${key}">${label}</option>`;
+  });
+  select.innerHTML = `<option value="">ทั้งหมด</option>${options.join('')}`;
+  if ([...select.options].some(opt => opt.value === current)) {
+    select.value = current;
+  }
+}
+
+function applyDashboardSettingsToUI() {
+  PAGE_SIZE = dashboardSettings.pageSize;
+  PROVINCES = [...dashboardSettings.provinces];
+  CUSTOMER_NAMES = [...dashboardSettings.customers];
+  PRODUCTS = [...dashboardSettings.products];
+  PLANTS = [...dashboardSettings.plants];
+  showChangedOnly = dashboardSettings.showChangedOnlyDefault;
+
+  const titleEl = document.getElementById('headerTitle');
+  const companyEl = document.getElementById('headerCompany');
+  const subtitleEl = document.getElementById('portalSubtitle');
+  if (titleEl) titleEl.textContent = dashboardSettings.appTitle;
+  if (companyEl) companyEl.textContent = DEALER_COMPANY_NAME;
+  if (subtitleEl) subtitleEl.textContent = dashboardSettings.appSubtitle;
+  document.title = dashboardSettings.appTitle;
+
+  const userEl = document.getElementById('loginUser');
+  const passEl = document.getElementById('loginPass');
+  const hintEl = document.getElementById('loginHint');
+  if (userEl) userEl.value = dashboardSettings.loginUsername;
+  if (passEl) passEl.value = dashboardSettings.loginPassword;
+  if (hintEl) hintEl.textContent = `Demo: ${dashboardSettings.loginUsername} / ${dashboardSettings.loginPassword}`;
+
+  renderIntervalOptions();
+  const intervalSelect = document.getElementById('intervalSelect');
+  if (intervalSelect) intervalSelect.value = String(dashboardSettings.defaultAutoRefreshSeconds);
+
+  renderEventTypeOptions();
+  const changedBtn = document.getElementById('changedToggle');
+  if (changedBtn) changedBtn.classList.toggle('active', showChangedOnly);
+}
+
+function loadDashboardSettings() {
+  let raw = null;
+  try {
+    raw = JSON.parse(localStorage.getItem(DASHBOARD_SETTINGS_KEY) || 'null');
+  } catch (err) {
+    raw = null;
+  }
+  dashboardSettings = normalizeDashboardSettings(raw || {});
+  applyDashboardSettingsToUI();
+}
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function randFrom(arr) { return arr[randInt(0, arr.length - 1)]; }
@@ -895,7 +1171,7 @@ let idCounter = 1;
 function genEvent(hoursAgo = 0, isNew = false) {
   const now = new Date();
   const ts = new Date(now - hoursAgo * 3600000 - randInt(0, 3600000));
-  const types = Object.keys(EVENT_TYPES);
+  const types = getEnabledEventTypeKeys();
   const type = randFrom(types);
   const prov = randFrom(PROVINCES);
   const siteNum = randInt(1000, 9999);
@@ -905,7 +1181,7 @@ function genEvent(hoursAgo = 0, isNew = false) {
   const qtyM3 = randInt(2, 30);
   const product = randFrom(PRODUCTS);
   const plant = randFrom(PLANTS);
-  const quoteNo = `QT-${2025}-${randInt(10000,99999)}`;
+  const quoteNo = `QT-${new Date().getFullYear()}-${randInt(10000,99999)}`;
   const bookingId = `BK-${randInt(100000,999999)}`;
   const invoiceNo = `INV-${randInt(100000,999999)}`;
   const custPrice = randInt(2500, 3500) * qtyM3;
@@ -979,8 +1255,8 @@ function genEvent(hoursAgo = 0, isNew = false) {
 
 function generateMockData() {
   const events = [];
-  // 60 events spread across today
-  for (let i = 0; i < 60; i++) {
+  const totalEvents = dashboardSettings?.initialEventCount || 60;
+  for (let i = 0; i < totalEvents; i++) {
     events.push(genEvent(i * 0.13));
   }
   // Sort newest first
@@ -994,7 +1270,7 @@ function generateMockData() {
 function doLogin() {
   const user = document.getElementById('loginUser').value;
   const pass = document.getElementById('loginPass').value;
-  if (user === 'dealer01' && pass === '1234') {
+  if (user === dashboardSettings.loginUsername && pass === dashboardSettings.loginPassword) {
     currentUser = { name: user, role: 'Dealer', token: 'mock-bearer-abc123' };
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
@@ -1017,14 +1293,15 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.ge
 function initApp() {
   updateHeaderDate();
   allEvents = generateMockData();
-  applyFilters();
-  renderKpis();
-  setInterval_();
+  loadDailyJobsFromExcel().finally(() => {
+    applyFilters();
+    renderKpis();
+    setInterval_();
+  });
 }
 
 function updateHeaderDate() {
   const now = new Date();
-  document.getElementById('headerDate').textContent = now.toLocaleDateString('th-TH', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('lastUpdated').textContent = fmtDateTime(now);
 }
 
@@ -1033,8 +1310,9 @@ function updateHeaderDate() {
 ═══════════════════════════════════════════ */
 function doRefresh() {
   const prevIds = new Set(allEvents.map(e => e.id));
-  // Simulate: add 0–3 new events
-  const newCount = randInt(0, 3);
+  const minNew = dashboardSettings?.refreshNewEventMin ?? 0;
+  const maxNew = dashboardSettings?.refreshNewEventMax ?? 3;
+  const newCount = randInt(minNew, maxNew);
   const newEvts = [];
   for (let i = 0; i < newCount; i++) {
     const e = genEvent(0, true);
@@ -1057,7 +1335,7 @@ function doRefresh() {
     showToast('ข้อมูลเป็นปัจจุบันแล้ว');
   }
   const badge = document.getElementById('newBadge');
-  if (newCount > 0) {
+  if (activeMainTab === 'activity' && newCount > 0) {
     badge.style.display = 'inline-flex';
     badge.textContent = `${newCount} รายการใหม่`;
   } else {
@@ -1091,31 +1369,375 @@ function toggleChip(el, group) {
   applyFilters();
 }
 
+function toNum(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const cleaned = String(value || '').replace(/,/g, '').trim();
+  if (!cleaned || cleaned === '-') return 0;
+  const n = Number.parseFloat(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function parseSheetDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const m = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    const day = Number.parseInt(m[1], 10);
+    const month = Number.parseInt(m[2], 10) - 1;
+    let year = Number.parseInt(m[3], 10);
+    if (year < 100) year += 2000;
+    const d = new Date(year, month, day);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  const fallback = new Date(raw);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+}
+
+function extractProductCode(value) {
+  const text = String(value || '').trim();
+  if (!text) return '-';
+  const head = text.split(' - ')[0].trim();
+  return head || text;
+}
+
+function extractOrderNoFromText(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  const paramMatch = text.match(/[?&]orderNo=([a-zA-Z0-9_-]+)/i);
+  if (paramMatch) return paramMatch[1];
+  const hashMatch = text.match(/\b[a-f0-9]{32}\b/i);
+  if (hashMatch) return hashMatch[0];
+  return '';
+}
+
+function buildTrackingUrl(orderNo) {
+  const key = String(orderNo || '').trim();
+  if (!key) return '';
+  return `${POUR_TRACKING_BASE_URL}${encodeURIComponent(key)}`;
+}
+
+function deriveTrackingOrderNo(row = [], bookingId = '') {
+  for (let i = 0; i < row.length; i++) {
+    const found = extractOrderNoFromText(row[i]);
+    if (found) return found;
+  }
+  const fallback = String(bookingId || '').trim();
+  if (/^[a-f0-9]{32}$/i.test(fallback)) return fallback;
+  return DEFAULT_TRACKING_ORDER_NO;
+}
+
+function mapDailyStatusClass(poStatus, bookingStatus) {
+  const po = String(poStatus || '').toLowerCase();
+  const booking = String(bookingStatus || '').toLowerCase();
+  const all = `${po} ${booking}`;
+  if (all.includes('ยกเลิก') || all.includes('cancel')) return 'state-rejected';
+  if (all.includes('เทเสร็จ') || all.includes('done')) return 'state-done';
+  if (all.includes('รอยืนยัน') || all.includes('pending')) return 'state-pending';
+  if (all.includes('ยืนยันแล้ว') || all.includes('อนุมัติ')) return 'state-approved';
+  return 'state-new';
+}
+
+function mapDailyStatusLabel(poStatus, bookingStatus) {
+  const po = String(poStatus || '').trim();
+  if (po) return po;
+  const booking = String(bookingStatus || '').trim();
+  return booking || '-';
+}
+
+function normalizeDailyJobRow(row = []) {
+  const pourDate = parseSheetDate(row[0]);
+  const startTime = String(row[1] || '').trim();
+  const jobNo = String(row[2] || '').trim();
+  const poStatus = String(row[3] || '').trim();
+  const agency = String(row[4] || '').trim();
+  const contractor = String(row[5] || '').trim();
+  const productCode = extractProductCode(row[6]);
+  const bookedQty = toNum(row[7]);
+  const confirmedQty = toNum(row[8]);
+  const pouredQty = toNum(row[9]);
+  const pendingQty = toNum(row[10]);
+  const pumpRaw = String(row[11] || '').trim();
+  const bookingStatus = String(row[16] || '').trim();
+  const sourceEventId = null;
+  const trackingOrderNo = deriveTrackingOrderNo(row, jobNo);
+  const trackingUrl = buildTrackingUrl(trackingOrderNo);
+
+  return {
+    bookingId: jobNo || '-',
+    statusLabel: mapDailyStatusLabel(poStatus, bookingStatus),
+    statusCls: mapDailyStatusClass(poStatus, bookingStatus),
+    agency: agency || '-',
+    contractor: contractor || '-',
+    productCode,
+    bookedQty,
+    confirmedQty,
+    pouredQty,
+    pendingQty,
+    pump: pumpRaw || '-',
+    hasPump: Boolean(pumpRaw && pumpRaw !== '-' && pumpRaw !== '0' && pumpRaw !== '0.0'),
+    pourDate: pourDate ? pourDate.toISOString() : '',
+    startTime,
+    sourceEventId,
+    trackingOrderNo,
+    trackingUrl,
+    raw: row,
+  };
+}
+
+async function loadDailyJobsFromExcel() {
+  hasDailyJobsExcel = false;
+  dailyJobsFromExcel = [];
+  if (!window.XLSX) return;
+
+  try {
+    const res = await fetch('./Daily job.xlsx', { cache: 'no-store' });
+    if (!res.ok) return;
+    const buffer = await res.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const firstSheet = wb.SheetNames?.[0];
+    if (!firstSheet) return;
+
+    const ws = wb.Sheets[firstSheet];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+    if (!Array.isArray(rows) || rows.length < 3) return;
+
+    const dataRows = rows
+      .slice(2)
+      .map(normalizeDailyJobRow)
+      .filter(r => r.bookingId !== '-' || r.agency !== '-' || r.contractor !== '-');
+
+    if (!dataRows.length) return;
+    dailyJobsFromExcel = dataRows;
+    hasDailyJobsExcel = true;
+  } catch (err) {
+    hasDailyJobsExcel = false;
+    dailyJobsFromExcel = [];
+  }
+}
+
+function switchMainTab(tab) {
+  activeMainTab = (tab === 'daily-pour') ? 'daily-pour' : 'activity';
+
+  const activityTab = document.getElementById('tabActivity');
+  const dailyTab = document.getElementById('tabDailyPour');
+  const activityPanel = document.getElementById('activityPanel');
+  const dailyPanel = document.getElementById('dailyPourPanel');
+
+  if (activityTab) activityTab.classList.toggle('active', activeMainTab === 'activity');
+  if (dailyTab) dailyTab.classList.toggle('active', activeMainTab === 'daily-pour');
+  if (activityPanel) activityPanel.classList.toggle('active', activeMainTab === 'activity');
+  if (dailyPanel) dailyPanel.classList.toggle('active', activeMainTab === 'daily-pour');
+
+  applyFilters();
+}
+
+function isSameCalendarDate(a, b) {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
+function matchesDateFilter(ts, dateFilter, now = new Date()) {
+  const eventDate = new Date(ts);
+  if (Number.isNaN(eventDate.getTime())) return false;
+  if (dateFilter === 'today') return isSameCalendarDate(eventDate, now);
+  if (dateFilter === 'yesterday') {
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return isSameCalendarDate(eventDate, yesterday);
+  }
+  return true;
+}
+
+function matchesTimeRange(ts, rangeKey) {
+  if (!rangeKey || rangeKey === 'all') return true;
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return false;
+  const minuteOfDay = d.getHours() * 60 + d.getMinutes();
+  const ranges = {
+    '06-09': [6 * 60, 9 * 60],
+    '09-12': [9 * 60, 12 * 60],
+    '12-15': [12 * 60, 15 * 60],
+    '15-18': [15 * 60, 18 * 60],
+    '18-21': [18 * 60, 21 * 60],
+    '21-24': [21 * 60, 24 * 60],
+    '00-03': [0, 3 * 60],
+    '03-06': [3 * 60, 6 * 60],
+  };
+  const range = ranges[rangeKey];
+  if (!range) return true;
+  const [startMin, endMin] = range;
+  if (endMin > startMin) return minuteOfDay >= startMin && minuteOfDay < endMin;
+  return minuteOfDay >= startMin || minuteOfDay < endMin;
+}
+
+function renderSiteProjectOptions() {
+  const select = document.getElementById('fSiteProject');
+  const label = document.getElementById('fSiteProjectLabel');
+  const dateFilter = document.getElementById('fDate')?.value || 'today';
+  if (!select) return;
+
+  const current = select.value;
+  const now = new Date();
+  const isDailyTab = activeMainTab === 'daily-pour';
+  let options = [];
+
+  if (isDailyTab) {
+    if (label) label.textContent = 'หน่วยงาน';
+    const units = (hasDailyJobsExcel ? dailyJobsFromExcel : [])
+      .filter(r => matchesDateFilter(r.pourDate, dateFilter, now))
+      .map(r => String(r.agency || '').trim())
+      .filter(Boolean);
+    options = [...new Set(units)]
+      .sort((a, b) => a.localeCompare(b, 'th'))
+      .map(v => ({ value: v, label: v }));
+  } else {
+    if (label) label.textContent = 'ไซต์/โครงการ';
+    const sites = allEvents
+      .filter(e => matchesDateFilter(e.ts, dateFilter, now))
+      .map(e => ({
+        code: String(e.site?.siteCode || '').trim(),
+        project: String(e.site?.projectName || '').trim(),
+      }))
+      .filter(s => s.code || s.project);
+    const unique = new Map();
+    sites.forEach(s => {
+      const key = s.code || s.project;
+      if (!unique.has(key)) {
+        const siteLabel = s.code && s.project ? `${s.code} - ${s.project}` : (s.code || s.project);
+        unique.set(key, { value: key, label: siteLabel });
+      }
+    });
+    options = [...unique.values()].sort((a, b) => a.label.localeCompare(b.label, 'th'));
+  }
+
+  select.innerHTML = '';
+  const allOption = document.createElement('option');
+  allOption.value = '';
+  allOption.textContent = isDailyTab ? 'หน่วยงานทั้งหมด' : 'ไซต์/โครงการทั้งหมด';
+  select.appendChild(allOption);
+
+  options.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item.value;
+    option.textContent = item.label;
+    select.appendChild(option);
+  });
+
+  if (current && options.some(opt => opt.value === current)) {
+    select.value = current;
+  } else {
+    select.value = '';
+  }
+}
+
+function getStateInfoByEvent(eventItem) {
+  const stateKey = eventItem?.status?.currentState || 'NEW';
+  return STATES[stateKey] || { label: stateKey, cls: 'state-new' };
+}
+
+function toProductCode(product = '', eventId = '') {
+  const p = String(product || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5) || 'MIX';
+  const suffix = String(eventId || '').replace(/\D/g, '').slice(-4).padStart(4, '0');
+  return `${p}${suffix}B00`;
+}
+
+function calcDailyPourRows(events, options = {}) {
+  const {
+    fDate = 'today',
+    fSiteProject = '',
+    fProv = '',
+    now = new Date(),
+  } = options;
+
+  if (hasDailyJobsExcel) {
+    return dailyJobsFromExcel
+      .filter(r => matchesDateFilter(r.pourDate, fDate, now))
+      .filter(r => !fSiteProject || r.agency === fSiteProject)
+      .filter(r => {
+        if (!fProv) return true;
+        const hay = `${r.agency} ${r.contractor}`.toLowerCase();
+        return hay.includes(fProv);
+      })
+      .sort((a, b) => {
+        const ad = new Date(a.pourDate);
+        const bd = new Date(b.pourDate);
+        const timeDiff = bd - ad;
+        if (timeDiff !== 0) return timeDiff;
+        return String(a.startTime || '').localeCompare(String(b.startTime || ''));
+      });
+  }
+
+  const byBooking = new Map();
+  const sorted = [...events].sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  const confirmTypes = new Set(['BOOKING_CONFIRMED', 'DISPATCH_LIVE', 'POUR_REMINDER', 'PAYMENT_PENDING', 'PAYMENT_CONFIRMED', 'INVOICE_CREATED']);
+
+  sorted.forEach(e => {
+    const bookingId = e.booking?.bookingId;
+    if (!bookingId || byBooking.has(bookingId)) return;
+
+    const qty = Number(e.booking?.qtyM3 || 0);
+    const confirmedQty = confirmTypes.has(e.eventType) ? qty : 0;
+    const baseQty = confirmedQty || qty;
+    const pourProgress = e.isDone ? 1 : e.eventType === 'DISPATCH_LIVE' ? 0.7 : e.eventType === 'POUR_REMINDER' ? 0.45 : e.eventType === 'BOOKING_CONFIRMED' ? 0.25 : 0;
+    const pouredQty = Math.round(baseQty * pourProgress * 100) / 100;
+    const pendingQty = Math.max(baseQty - pouredQty, 0);
+    const stateInfo = getStateInfoByEvent(e);
+
+    byBooking.set(bookingId, {
+      bookingId,
+      statusLabel: e.isDone ? 'Done' : stateInfo.label,
+      statusCls: stateInfo.cls,
+      agency: e.booking?.plant || '-',
+      contractor: e.customer?.lineName || '-',
+      productCode: toProductCode(e.booking?.product, e.id),
+      bookedQty: qty,
+      confirmedQty,
+      pouredQty,
+      pendingQty,
+      pump: qty >= 10 ? 'ใช้' : '-',
+      hasPump: qty >= 10,
+      pourDate: e.booking?.pourDateTime || e.ts,
+      sourceEventId: e.id,
+      trackingOrderNo: bookingId,
+      trackingUrl: buildTrackingUrl(bookingId),
+    });
+  });
+
+  return [...byBooking.values()]
+    .filter(r => !fSiteProject || r.agency === fSiteProject)
+    .sort((a, b) => new Date(a.pourDate) - new Date(b.pourDate));
+}
+
 function applyFilters() {
+  const fDate = document.getElementById('fDate').value;
+  renderSiteProjectOptions();
+  const fSiteProject = document.getElementById('fSiteProject').value;
   const fProv = document.getElementById('fProv').value.toLowerCase().trim();
   const fType = document.getElementById('fType').value;
-  const fSearch = document.getElementById('fSearch').value.toLowerCase().trim();
   const fTime = document.getElementById('fTime').value;
   const activeSevs = getActiveSevs();
   const now = new Date();
 
   filteredEvents = allEvents.filter(e => {
+    if (!matchesDateFilter(e.ts, fDate, now)) return false;
     if (showChangedOnly && !e.isNew && !e.isChanged) return false;
     if (!activeSevs.includes(e.severity)) return false;
     if (fType && e.eventType !== fType) return false;
+    if (activeMainTab === 'activity' && fSiteProject && e.site?.siteCode !== fSiteProject && e.site?.projectName !== fSiteProject) return false;
     if (fProv && !e.site.province.includes(fProv) && !e.site.province.toLowerCase().includes(fProv)) return false;
-    if (fTime !== 'all') {
-      const mins = parseInt(fTime);
-      if ((now - new Date(e.ts)) > mins * 60000) return false;
-    }
-    if (fSearch) {
-      const hay = [e.site.siteCode, e.quote.quoteNo, e.customer.lineName, e.customer.phone, e.site.projectName].join(' ').toLowerCase();
-      if (!hay.includes(fSearch)) return false;
-    }
+    if (!matchesTimeRange(e.ts, fTime)) return false;
     return true;
   });
 
+  filteredDailyPourRows = calcDailyPourRows(filteredEvents, {
+    fDate,
+    fSiteProject,
+    fProv,
+    now,
+  });
   currentPage = 1;
+  currentPourPage = 1;
   renderTable();
   renderPagination();
 }
@@ -1161,12 +1783,40 @@ function filterByKpi(type, el) {
 /* ═══════════════════════════════════════════
    TABLE RENDER
 ═══════════════════════════════════════════ */
-function renderTable() {
+function formatQty(value) {
+  return Number(value || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function updateTableHeader() {
+  const titleEl = document.getElementById('tableTitle');
+  const countEl = document.getElementById('tableCount');
+  const badgeEl = document.getElementById('newBadge');
+  if (!titleEl || !countEl || !badgeEl) return;
+
+  if (activeMainTab === 'daily-pour') {
+    titleEl.textContent = 'งานเทประจำวันของ Dealer';
+    countEl.textContent = `${filteredDailyPourRows.length} งาน`;
+    badgeEl.style.display = 'none';
+    return;
+  }
+
+  titleEl.textContent = 'Activity Time Log';
+  countEl.textContent = `${filteredEvents.length} รายการ`;
+  if (newEventIds.size > 0) {
+    if (!badgeEl.textContent || badgeEl.textContent === '0 รายการใหม่') {
+      badgeEl.textContent = `${newEventIds.size} รายการใหม่`;
+    }
+    badgeEl.style.display = 'inline-flex';
+  } else {
+    badgeEl.style.display = 'none';
+  }
+}
+
+function renderActivityTable() {
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageEvents = filteredEvents.slice(start, start + PAGE_SIZE);
   const tbody = document.getElementById('actBody');
-
-  document.getElementById('tableCount').textContent = `${filteredEvents.length} รายการ`;
+  if (!tbody) return;
 
   if (pageEvents.length === 0) {
     tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="emoji">📭</div><h3>ไม่พบรายการ</h3><p>ลองเปลี่ยน filter หรือ refresh ใหม่</p></div></td></tr>`;
@@ -1218,9 +1868,46 @@ function renderTable() {
   }).join('');
 }
 
-function renderPagination() {
+function renderPouredQtyCell(row) {
+  const qtyText = formatQty(row.pouredQty);
+  if (!row.trackingUrl) return qtyText;
+  return `<a class="num-link" href="${escHtml(row.trackingUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${qtyText}</a>`;
+}
+
+function renderDailyPourTable() {
+  const start = (currentPourPage - 1) * PAGE_SIZE;
+  const pageRows = filteredDailyPourRows.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('pourBody');
+  if (!tbody) return;
+
+  if (pageRows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="emoji">🚧</div><h3>ไม่พบงานเทประจำวัน</h3><p>ลองเปลี่ยน filter แล้วตรวจสอบอีกครั้ง</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pageRows.map(r => `
+    <tr class="${(r.sourceEventId && selectedEventId===r.sourceEventId)?'selected-row':''}" ${r.sourceEventId ? `onclick="openDrawer('${r.sourceEventId}')"` : 'style="cursor:default"'}>
+      <td class="mono">${escHtml(r.bookingId)}</td>
+      <td><span class="status-pill ${r.statusCls}">${escHtml(r.statusLabel)}</span></td>
+      <td>${escHtml(r.agency)}</td>
+      <td>${escHtml(r.contractor)}</td>
+      <td class="mono">${escHtml(r.productCode)}</td>
+      <td class="num-cell">${formatQty(r.bookedQty)}</td>
+      <td class="num-cell">${formatQty(r.confirmedQty)}</td>
+      <td class="num-cell">${renderPouredQtyCell(r)}</td>
+      <td class="num-cell">${formatQty(r.pendingQty)}</td>
+      <td><span class="pump-pill ${r.hasPump?'on':''}">${r.pump}</span></td>
+      <td>${new Date(r.pourDate).toLocaleDateString('th-TH')}</td>
+    </tr>
+  `).join('');
+}
+
+function renderActivityPagination() {
   const totalPages = Math.ceil(filteredEvents.length / PAGE_SIZE);
   const pg = document.getElementById('pagination');
+  const pgPour = document.getElementById('paginationPour');
+  if (pgPour) pgPour.innerHTML = '';
+  if (!pg) return;
   if (totalPages <= 1) { pg.innerHTML = ''; return; }
 
   let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>`;
@@ -1232,10 +1919,52 @@ function renderPagination() {
   pg.innerHTML = html;
 }
 
+function renderDailyPourPagination() {
+  const totalPages = Math.ceil(filteredDailyPourRows.length / PAGE_SIZE);
+  const pg = document.getElementById('paginationPour');
+  const pgAct = document.getElementById('pagination');
+  if (pgAct) pgAct.innerHTML = '';
+  if (!pg) return;
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPagePour(${currentPourPage-1})" ${currentPourPage<=1?'disabled':''}>‹</button>`;
+  for (let p = Math.max(1, currentPourPage-2); p <= Math.min(totalPages, currentPourPage+2); p++) {
+    html += `<button class="page-btn ${p===currentPourPage?'active':''}" onclick="goPagePour(${p})">${p}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPagePour(${currentPourPage+1})" ${currentPourPage>=totalPages?'disabled':''}>›</button>`;
+  html += `<span class="page-info">หน้า ${currentPourPage}/${totalPages} | ${filteredDailyPourRows.length} งาน</span>`;
+  pg.innerHTML = html;
+}
+
+function renderTable() {
+  updateTableHeader();
+  if (activeMainTab === 'daily-pour') {
+    renderDailyPourTable();
+  } else {
+    renderActivityTable();
+  }
+}
+
+function renderPagination() {
+  if (activeMainTab === 'daily-pour') {
+    renderDailyPourPagination();
+  } else {
+    renderActivityPagination();
+  }
+}
+
 function goPage(p) {
   const totalPages = Math.ceil(filteredEvents.length / PAGE_SIZE);
   if (p < 1 || p > totalPages) return;
   currentPage = p;
+  renderTable();
+  renderPagination();
+}
+
+function goPagePour(p) {
+  const totalPages = Math.ceil(filteredDailyPourRows.length / PAGE_SIZE);
+  if (p < 1 || p > totalPages) return;
+  currentPourPage = p;
   renderTable();
   renderPagination();
 }
@@ -1472,6 +2201,8 @@ function showToast(msg, type = '') {
   c.appendChild(t);
   setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2800);
 }
+
+loadDashboardSettings();
 
 // Close audit on overlay click
 document.getElementById('auditModal').addEventListener('click', function(e) {

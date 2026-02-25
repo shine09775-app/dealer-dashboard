@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./CPACTheme.css">
+<style>
+:root {
+  --primary: #189cd8;
+  --primary-dark: #127eae;
+  --surface: #ffffff;
+  --surface-2: #f2f9fd;
+  --surface-3: #e6f3fb;
+  --text: #0f2438;
+  --text-muted: #4f6b80;
+  --border: #b5dbf0;
+  --success: #0fb36a;
+  --danger: #e53955;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --font: 'IBM Plex Sans Thai', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --shadow: 0 12px 30px rgba(24, 156, 216, 0.14);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 1200px at 15% 10%, rgba(24, 156, 216, 0.07), transparent 45%),
+    radial-gradient(1000px 900px at 85% 0, rgba(24, 156, 216, 0.05), transparent 35%),
+    var(--surface-2);
+}
+
+.page {
+  width: min(1180px, 94vw);
+  margin: 24px auto 40px;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(24, 156, 216, 0.95);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow);
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.header-sub {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.header-spacer { flex: 1; }
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s ease;
+}
+
+.btn-primary {
+  background: #fff;
+  color: var(--primary);
+}
+
+.btn-primary:hover { background: #eaf7ff; }
+
+.btn-ghost {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+}
+
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.24); }
+
+.grid {
+  margin-top: 16px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+.card h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.card p {
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.card.col-6 { grid-column: span 6; }
+.card.col-12 { grid-column: span 12; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field.full { grid-column: 1 / -1; }
+
+label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-family: var(--font);
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+
+.mono { font-family: var(--mono); }
+
+.hint {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.status {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid transparent;
+  display: none;
+}
+
+.status.show { display: block; }
+.status.ok {
+  background: #e9f9f1;
+  color: #0a8b50;
+  border-color: #9de1bf;
+}
+
+.status.error {
+  background: #fff1f4;
+  color: #b71d38;
+  border-color: #f4a2b2;
+}
+
+.event-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.event-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-item label {
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.footer-note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 920px) {
+  .card.col-6 { grid-column: span 12; }
+  .form-grid { grid-template-columns: 1fr; }
+  .event-list { grid-template-columns: 1fr; }
+  .header {
+    flex-wrap: wrap;
+  }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="header-title">Dashboard Settings</div>
+      <div class="header-sub">ตั้งค่าหน้านี้แล้วกด Save จากนั้นเปิด dashboard เพื่อใช้งานค่าใหม่</div>
+    </div>
+    <div class="header-spacer"></div>
+    <button class="btn btn-ghost" id="btnReset">Reset Default</button>
+    <button class="btn btn-ghost" id="btnDashboard">Open Dashboard</button>
+    <button class="btn btn-primary" id="btnSave">Save Settings</button>
+  </div>
+
+  <div class="grid">
+    <section class="card col-6">
+      <h2>General</h2>
+      <p>ชื่อ dashboard และข้อมูล login สำหรับหน้า dealer dashboard</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="appTitle">App Title</label>
+          <input type="text" id="appTitle">
+        </div>
+        <div class="field">
+          <label for="appSubtitle">Portal Subtitle</label>
+          <input type="text" id="appSubtitle">
+        </div>
+        <div class="field">
+          <label for="loginUsername">Login Username</label>
+          <input type="text" id="loginUsername" class="mono">
+        </div>
+        <div class="field">
+          <label for="loginPassword">Login Password</label>
+          <input type="password" id="loginPassword" class="mono">
+        </div>
+      </div>
+    </section>
+
+    <section class="card col-6">
+      <h2>Runtime</h2>
+      <p>ควบคุมการแสดงผลตารางและพฤติกรรม refresh อัตโนมัติ</p>
+      <div class="form-grid">
+        <div class="field">
+          <label for="pageSize">Page Size</label>
+          <input type="number" id="pageSize" min="5" max="200">
+        </div>
+        <div class="field">
+          <label for="initialEventCount">Initial Event Count</label>
+          <input type="number" id="initialEventCount" min="10" max="500">
+        </div>
+        <div class="field">
+          <label for="refreshNewEventMin">Refresh New Event Min</label>
+          <input type="number" id="refreshNewEventMin" min="0" max="50">
+        </div>
+        <div class="field">
+          <label for="refreshNewEventMax">Refresh New Event Max</label>
+          <input type="number" id="refreshNewEventMax" min="0" max="50">
+        </div>
+        <div class="field">
+          <label for="defaultAutoRefreshSeconds">Default Auto Refresh (sec)</label>
+          <input type="number" id="defaultAutoRefreshSeconds" min="0" max="3600">
+        </div>
+        <div class="field">
+          <label for="autoRefreshOptions">Auto Refresh Options (comma separated)</label>
+          <input type="text" id="autoRefreshOptions" class="mono" placeholder="0,15,30,60,300">
+        </div>
+        <div class="field full">
+          <label>
+            <input type="checkbox" id="showChangedOnlyDefault">
+            Start with Changed Only enabled
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="card col-12">
+      <h2>Enabled Event Types</h2>
+      <p>เลือกประเภท Event ที่ต้องการให้ระบบสุ่มและแสดงใน filter</p>
+      <div id="eventTypeList" class="event-list"></div>
+    </section>
+
+    <section class="card col-6">
+      <h2>Province Master</h2>
+      <p>ใส่ทีละบรรทัด</p>
+      <textarea id="provinces"></textarea>
+    </section>
+
+    <section class="card col-6">
+      <h2>Customer Master</h2>
+      <p>ใส่ทีละบรรทัด</p>
+      <textarea id="customers"></textarea>
+    </section>
+
+    <section class="card col-6">
+      <h2>Products</h2>
+      <p>ใส่ทีละบรรทัด</p>
+      <textarea id="products"></textarea>
+    </section>
+
+    <section class="card col-6">
+      <h2>Plants</h2>
+      <p>ใส่ทีละบรรทัด</p>
+      <textarea id="plants"></textarea>
+    </section>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="footer-note">Storage key: <span class="mono">dealerDashboardSettingsV1</span></div>
+</div>
+
+<script>
+const SETTINGS_KEY = 'dealerDashboardSettingsV1';
+
+const EVENT_TYPES = {
+  SITE_PENDING:      { label: 'ขอเปิดไซต์', icon: '🏗️' },
+  QUOTE_SENT:        { label: 'ส่ง Quotation', icon: '📄' },
+  ADD_PRODUCT:       { label: 'เพิ่มสินค้า', icon: '➕' },
+  BOOKING_REQUEST:   { label: 'จองคิว', icon: '📅' },
+  BOOKING_CONFIRMED: { label: 'ยืนยันการเท', icon: '✅' },
+  INVOICE_CREATED:   { label: 'ออก Invoice', icon: '🧾' },
+  PAYMENT_PENDING:   { label: 'รอยืนยันชำระ', icon: '💳' },
+  PAYMENT_CONFIRMED: { label: 'ชำระแล้ว', icon: '✔️' },
+  DISPATCH_LIVE:     { label: 'Dispatch Live', icon: '🚛' },
+  CUSTOMER_ACTION:   { label: 'Action ลูกค้า', icon: '📱' },
+  POUR_REMINDER:     { label: 'แจ้งเตือนเท', icon: '⏰' },
+};
+
+const DEALER_COMPANY_NAME = 'บ.นวชัย แมททีเรียล เทรดดิ้ง จก.';
+const DEALER_PORTAL_SUBTITLE = 'Activity Dashboard "ร้านผู้แทนจำหน่าย"';
+
+const DEFAULT_SETTINGS = {
+  appTitle: 'Dealer Daily Activity Dashboard',
+  appSubtitle: DEALER_PORTAL_SUBTITLE,
+  loginUsername: 'dealer01',
+  loginPassword: '1234',
+  pageSize: 25,
+  initialEventCount: 60,
+  refreshNewEventMin: 0,
+  refreshNewEventMax: 3,
+  defaultAutoRefreshSeconds: 30,
+  autoRefreshOptions: [0, 15, 30, 60, 300],
+  showChangedOnlyDefault: false,
+  enabledEventTypes: Object.keys(EVENT_TYPES),
+  provinces: ['กรุงเทพ','นนทบุรี','ปทุมธานี','สมุทรปราการ','ชลบุรี','ระยอง','นครราชสีมา','ขอนแก่น','อุดรธานี','เชียงใหม่','ภูเก็ต','สุราษฎร์ธานี','อยุธยา','สระบุรี','ลพบุรี','นครปฐม','ราชบุรี','กาญจนบุรี'],
+  customers: ['คุณสมชาย ใจดี','คุณวิไล รักงาน','บริษัท สร้างดี จำกัด','คุณปรีชา บุญมา','ห้างหุ้นส่วน ชวนชัย','คุณมานะ อดทน','บริษัท พัฒนาที่ดี จำกัด','คุณสุดา ดวงดี','คุณประสิทธิ์ มีคุณ','บริษัท ก้าวหน้า จำกัด','คุณอรทัย งามดี','คุณธนกร ร่ำรวย','ห้างหุ้นส่วน สามัคคี','คุณกมล สุขสม','บริษัท รุ่งเรือง จำกัด'],
+  products: ['คอนกรีต 240 ksc','คอนกรีต 280 ksc','คอนกรีต 300 ksc','คอนกรีต 320 ksc','คอนกรีต 350 ksc'],
+  plants: ['โรงงานลาดกระบัง','โรงงานรังสิต','โรงงานบางนา','โรงงานพระราม 2','โรงงานชลบุรี'],
+};
+
+function toInt(value, fallback) {
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function clampInt(value, fallback, min, max) {
+  const n = toInt(value, fallback);
+  return Math.min(Math.max(n, min), max);
+}
+
+function parseCommaNumbers(value, fallback) {
+  const parts = String(value || '').split(',');
+  const out = [];
+  parts.forEach(p => {
+    const n = toInt(p.trim(), NaN);
+    if (Number.isFinite(n) && n >= 0 && !out.includes(n)) out.push(n);
+  });
+  out.sort((a, b) => a - b);
+  return out.length ? out : [...fallback];
+}
+
+function splitLines(value, fallback) {
+  const out = String(value || '')
+    .split(/\r?\n/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  return out.length ? out : [...fallback];
+}
+
+function normalize(settings = {}) {
+  const merged = { ...DEFAULT_SETTINGS, ...(settings || {}) };
+  const keys = Object.keys(EVENT_TYPES);
+  const legacyCombinedTitle = 'Dealer Daily Activity Dashboard — บ.นวชัย แมททีเรียล เทรดดิ้ง จก.';
+  const legacySubtitle = 'น้องวางใจ — Activity Dashboard';
+  const normalized = {
+    appTitle: String(merged.appTitle || DEFAULT_SETTINGS.appTitle).trim() || DEFAULT_SETTINGS.appTitle,
+    appSubtitle: String(merged.appSubtitle || DEFAULT_SETTINGS.appSubtitle).trim() || DEFAULT_SETTINGS.appSubtitle,
+    loginUsername: String(merged.loginUsername || DEFAULT_SETTINGS.loginUsername).trim() || DEFAULT_SETTINGS.loginUsername,
+    loginPassword: String(merged.loginPassword || DEFAULT_SETTINGS.loginPassword),
+    pageSize: clampInt(merged.pageSize, DEFAULT_SETTINGS.pageSize, 5, 200),
+    initialEventCount: clampInt(merged.initialEventCount, DEFAULT_SETTINGS.initialEventCount, 10, 500),
+    refreshNewEventMin: clampInt(merged.refreshNewEventMin, DEFAULT_SETTINGS.refreshNewEventMin, 0, 50),
+    refreshNewEventMax: clampInt(merged.refreshNewEventMax, DEFAULT_SETTINGS.refreshNewEventMax, 0, 50),
+    defaultAutoRefreshSeconds: clampInt(merged.defaultAutoRefreshSeconds, DEFAULT_SETTINGS.defaultAutoRefreshSeconds, 0, 3600),
+    autoRefreshOptions: Array.isArray(merged.autoRefreshOptions)
+      ? parseCommaNumbers(merged.autoRefreshOptions.join(','), DEFAULT_SETTINGS.autoRefreshOptions)
+      : parseCommaNumbers(merged.autoRefreshOptions, DEFAULT_SETTINGS.autoRefreshOptions),
+    showChangedOnlyDefault: Boolean(merged.showChangedOnlyDefault),
+    enabledEventTypes: Array.isArray(merged.enabledEventTypes)
+      ? merged.enabledEventTypes.filter(k => keys.includes(k))
+      : [...DEFAULT_SETTINGS.enabledEventTypes],
+    provinces: Array.isArray(merged.provinces) ? merged.provinces.filter(Boolean) : [...DEFAULT_SETTINGS.provinces],
+    customers: Array.isArray(merged.customers) ? merged.customers.filter(Boolean) : [...DEFAULT_SETTINGS.customers],
+    products: Array.isArray(merged.products) ? merged.products.filter(Boolean) : [...DEFAULT_SETTINGS.products],
+    plants: Array.isArray(merged.plants) ? merged.plants.filter(Boolean) : [...DEFAULT_SETTINGS.plants],
+  };
+
+  if (normalized.appTitle === legacyCombinedTitle) {
+    normalized.appTitle = DEFAULT_SETTINGS.appTitle;
+  }
+  if (normalized.appSubtitle === legacySubtitle || normalized.appSubtitle === DEALER_COMPANY_NAME) {
+    normalized.appSubtitle = DEFAULT_SETTINGS.appSubtitle;
+  }
+
+  if (!normalized.enabledEventTypes.length) {
+    normalized.enabledEventTypes = [...DEFAULT_SETTINGS.enabledEventTypes];
+  }
+  if (normalized.refreshNewEventMax < normalized.refreshNewEventMin) {
+    normalized.refreshNewEventMax = normalized.refreshNewEventMin;
+  }
+  if (!normalized.autoRefreshOptions.includes(normalized.defaultAutoRefreshSeconds)) {
+    normalized.autoRefreshOptions.push(normalized.defaultAutoRefreshSeconds);
+    normalized.autoRefreshOptions.sort((a, b) => a - b);
+  }
+  return normalized;
+}
+
+function setStatus(type, message) {
+  const el = document.getElementById('status');
+  el.className = `status show ${type}`;
+  el.textContent = message;
+}
+
+function renderEventTypeList(selectedKeys) {
+  const root = document.getElementById('eventTypeList');
+  const keys = Object.keys(EVENT_TYPES);
+  root.innerHTML = keys.map(key => {
+    const info = EVENT_TYPES[key];
+    const checked = selectedKeys.includes(key) ? 'checked' : '';
+    return `
+      <div class="event-item">
+        <input type="checkbox" id="evt_${key}" value="${key}" ${checked}>
+        <label for="evt_${key}">${info.icon} ${info.label}</label>
+      </div>
+    `;
+  }).join('');
+}
+
+function getCheckedEventTypes() {
+  return [...document.querySelectorAll('#eventTypeList input[type=\"checkbox\"]:checked')].map(el => el.value);
+}
+
+function populateForm(settings) {
+  document.getElementById('appTitle').value = settings.appTitle;
+  document.getElementById('appSubtitle').value = settings.appSubtitle;
+  document.getElementById('loginUsername').value = settings.loginUsername;
+  document.getElementById('loginPassword').value = settings.loginPassword;
+  document.getElementById('pageSize').value = settings.pageSize;
+  document.getElementById('initialEventCount').value = settings.initialEventCount;
+  document.getElementById('refreshNewEventMin').value = settings.refreshNewEventMin;
+  document.getElementById('refreshNewEventMax').value = settings.refreshNewEventMax;
+  document.getElementById('defaultAutoRefreshSeconds').value = settings.defaultAutoRefreshSeconds;
+  document.getElementById('autoRefreshOptions').value = settings.autoRefreshOptions.join(',');
+  document.getElementById('showChangedOnlyDefault').checked = settings.showChangedOnlyDefault;
+  document.getElementById('provinces').value = settings.provinces.join('\n');
+  document.getElementById('customers').value = settings.customers.join('\n');
+  document.getElementById('products').value = settings.products.join('\n');
+  document.getElementById('plants').value = settings.plants.join('\n');
+  renderEventTypeList(settings.enabledEventTypes);
+}
+
+function collectFormData() {
+  const raw = {
+    appTitle: document.getElementById('appTitle').value,
+    appSubtitle: document.getElementById('appSubtitle').value,
+    loginUsername: document.getElementById('loginUsername').value,
+    loginPassword: document.getElementById('loginPassword').value,
+    pageSize: document.getElementById('pageSize').value,
+    initialEventCount: document.getElementById('initialEventCount').value,
+    refreshNewEventMin: document.getElementById('refreshNewEventMin').value,
+    refreshNewEventMax: document.getElementById('refreshNewEventMax').value,
+    defaultAutoRefreshSeconds: document.getElementById('defaultAutoRefreshSeconds').value,
+    autoRefreshOptions: document.getElementById('autoRefreshOptions').value,
+    showChangedOnlyDefault: document.getElementById('showChangedOnlyDefault').checked,
+    enabledEventTypes: getCheckedEventTypes(),
+    provinces: splitLines(document.getElementById('provinces').value, DEFAULT_SETTINGS.provinces),
+    customers: splitLines(document.getElementById('customers').value, DEFAULT_SETTINGS.customers),
+    products: splitLines(document.getElementById('products').value, DEFAULT_SETTINGS.products),
+    plants: splitLines(document.getElementById('plants').value, DEFAULT_SETTINGS.plants),
+  };
+  return normalize(raw);
+}
+
+function loadFromStorage() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+    return normalize(raw || DEFAULT_SETTINGS);
+  } catch (err) {
+    return normalize(DEFAULT_SETTINGS);
+  }
+}
+
+function saveSettings() {
+  try {
+    const settings = collectFormData();
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    window.location.href = 'dealer-dashboard.html';
+  } catch (err) {
+    setStatus('error', 'บันทึกไม่สำเร็จ: ' + err.message);
+  }
+}
+
+function resetDefaults() {
+  const settings = normalize(DEFAULT_SETTINGS);
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  populateForm(settings);
+  setStatus('ok', 'รีเซ็ตเป็นค่าเริ่มต้นเรียบร้อย');
+}
+
+document.getElementById('btnSave').addEventListener('click', saveSettings);
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (window.confirm('Reset เป็นค่าเริ่มต้นทั้งหมด?')) resetDefaults();
+});
+document.getElementById('btnDashboard').addEventListener('click', () => {
+  window.location.href = 'dealer-dashboard.html';
+});
+
+populateForm(loadFromStorage());
+</script>
+</body>
+</html>
