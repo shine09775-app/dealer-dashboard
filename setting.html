@@ -6,6 +6,8 @@
 <title>Dashboard Settings</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./CPACTheme.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-client.js"></script>
 <style>
 :root {
   --primary: #189cd8;
@@ -356,6 +358,7 @@ textarea:focus {
 
 <script>
 const SETTINGS_KEY = 'dealerDashboardSettingsV1';
+const supabaseBridge = window.DEALER_SUPABASE || null;
 
 const EVENT_TYPES = {
   SITE_PENDING:      { label: 'ขอเปิดไซต์', icon: '🏗️' },
@@ -545,13 +548,32 @@ function loadFromStorage() {
   }
 }
 
-function saveSettings() {
+async function loadFromSupabase() {
+  if (!supabaseBridge || !supabaseBridge.isReady()) return null;
+  const result = await supabaseBridge.fetchDashboardSettings();
+  if (!result?.ok || !result.data) return null;
+  return normalize(result.data);
+}
+async function saveSettings() {
   try {
     const settings = collectFormData();
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+
+    if (supabaseBridge && supabaseBridge.isReady()) {
+      const result = await supabaseBridge.saveDashboardSettings(settings);
+      if (!result?.ok) {
+        const msg = result?.error?.message || 'unknown error';
+        setStatus('error', 'Save to Supabase failed. Using local storage instead: ' + msg);
+        setTimeout(() => {
+          window.location.href = 'dealer-dashboard.html';
+        }, 1200);
+        return;
+      }
+    }
+
     window.location.href = 'dealer-dashboard.html';
   } catch (err) {
-    setStatus('error', 'บันทึกไม่สำเร็จ: ' + err.message);
+    setStatus('error', 'Save failed: ' + err.message);
   }
 }
 
@@ -570,7 +592,21 @@ document.getElementById('btnDashboard').addEventListener('click', () => {
   window.location.href = 'dealer-dashboard.html';
 });
 
-populateForm(loadFromStorage());
+async function initSettingsPage() {
+  const localSettings = loadFromStorage();
+  populateForm(localSettings);
+
+  const remoteSettings = await loadFromSupabase();
+  if (remoteSettings) {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(remoteSettings));
+    populateForm(remoteSettings);
+    setStatus('ok', 'Loaded settings from Supabase');
+  }
+}
+
+initSettingsPage();
 </script>
 </body>
 </html>
+
+

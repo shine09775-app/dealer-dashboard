@@ -6,6 +6,8 @@
 <title>Dealer Daily Activity Dashboard — บ.นวชัย แมททีเรียล เทรดดิ้ง จก.</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-client.js"></script>
 <link rel="stylesheet" href="./CPACTheme.css">
 <style>
 /* ─── ROOT VARIABLES (CPACTheme inspired) ─── */
@@ -983,6 +985,7 @@ const POUR_TRACKING_BASE_URL = 'https://bluenet.scg.com/sda/#/dp-list?orderNo=';
 const DEFAULT_TRACKING_ORDER_NO = '9dbc19d1459343ec8cb70b235a064dbf';
 
 const DASHBOARD_SETTINGS_KEY = 'dealerDashboardSettingsV1';
+const supabaseBridge = window.DEALER_SUPABASE || null;
 const DEFAULT_DASHBOARD_SETTINGS = {
   appTitle: 'Dealer Daily Activity Dashboard',
   appSubtitle: DEALER_PORTAL_SUBTITLE,
